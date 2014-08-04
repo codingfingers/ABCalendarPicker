@@ -371,6 +371,10 @@
 
 - (void)titleClicked:(id)sender
 {
+    if (self.isStateBlocked) {
+        return;
+    }
+    
     NSInteger index = [self.providers indexOfObject:self.currentProvider];
     if (index < self.providers.count-1 && [self.providers objectAtIndex:index+1] != nil)
         [self setState:self.currentState+1 animated:YES];
@@ -669,6 +673,7 @@
 - (void)updateColumnNamesForProvider:(id<ABCalendarPickerDateProviderProtocol>)provider
 {
     NSInteger columnsCount = [provider columnsCount];
+    
     CGFloat buttonWidth = self.bounds.size.width / columnsCount;
     
     if (self.columnLabels != nil)
@@ -750,6 +755,7 @@
     self.titleLabel.text = [provider titleText];
     
     self.gradientBar.image = [self.styleProvider patternImageForGradientBar];
+    self.gradientBar.frame = CGRectMake(0, 0, self.bounds.size.width, 50);
 }
 
 - (void)updateArrowsForProvider:(id<ABCalendarPickerDateProviderProtocol>)provider
@@ -837,7 +843,7 @@
     NSInteger rowsCount = [provider rowsCount];
     NSInteger columnsCount = [provider columnsCount];
     CGFloat buttonWidth = floor((self.bounds.size.width + 2) / columnsCount);
-    CGFloat buttonHeight = buttonWidth;
+    CGFloat buttonHeight = [self buttonHeightForColumnsCount:columnsCount];
     
     self.selectedControl = nil;
     self.highlightedControl = nil;
@@ -1140,9 +1146,17 @@
             animation:(ABCalendarPickerAnimation)animation
            canDiffuse:(NSInteger)canDiffuse
 {
+    if (self.isStateBlocked
+        && animation >= ABCalendarPickerAnimationScrollDownFor6Rows
+        && animation <= ABCalendarPickerAnimationScrollUpFor6Rows) {
+        return;
+    }
+    
     if (!self.userInteractionEnabled)
         return;
     self.userInteractionEnabled = NO;
+    
+
     
     // Delegate talks
     if (toState != fromState)
@@ -1171,7 +1185,7 @@
     NSInteger rowsCount = [provider rowsCount];
     NSInteger columnsCount = [provider columnsCount];
     CGFloat buttonWidth = floor((self.bounds.size.width + 2) / columnsCount);
-    CGFloat buttonHeight = buttonWidth;
+    CGFloat buttonHeight = [self buttonHeightForColumnsCount:columnsCount];
     
     CGFloat oldFrameBottom = self.frame.origin.y + self.frame.size.height;
     CGFloat newFrameHeight = 50.0 + buttonHeight*rowsCount + 1;
@@ -1229,7 +1243,6 @@
     [self updateButtonsForProvider:provider andState:toState];
     [self updateColumnNamesForProvider:provider];
     [self updateArrowsForProvider:provider];
-    [self updateTitleForProvider:provider];
     
     // NO Animation
     
@@ -1237,15 +1250,9 @@
     {
         CGFloat oldFrameHeight = self.frame.size.height;
         self.frame = CGRectMake(self.frame.origin.x,
-                                self.bottomExpanding ? self.frame.origin.y : (oldFrameBottom - newFrameHeight),
+                                self.bottomExpanding ? self.frame.origin.y : (oldFrameBottom - newFrameHeight), 
                                 self.frame.size.width,
                                 newFrameHeight);
-        if (self.constraints.count > 0) {
-            for (NSLayoutConstraint *constraint in self.constraints)
-                if (constraint.firstAttribute == NSLayoutAttributeHeight)
-                    constraint.constant = newFrameHeight;
-            [self.superview layoutIfNeeded];
-        }
         self.mainTileView.frame = CGRectMake(0,50,self.frame.size.width,self.frame.size.height-50);
         if (oldFrameHeight != newFrameHeight)
         {
@@ -1258,8 +1265,12 @@
         self.currentState = toState;
 
         [self animationDidStop:nil finished:nil context:nil];
+        
+        [self updateTitleForProvider:provider];
         return;
     }
+    
+    [self updateTitleForProvider:provider];
     
     // Animation
     
@@ -1399,13 +1410,8 @@
                             self.bottomExpanding ? self.frame.origin.y : (oldFrameBottom - newFrameHeight),
                             self.frame.size.width,
                             newFrameHeight);
-    if (self.constraints.count > 0) {
-        for (NSLayoutConstraint *constraint in self.constraints)
-            if (constraint.firstAttribute == NSLayoutAttributeHeight)
-                constraint.constant = newFrameHeight;
-        [self.superview layoutIfNeeded];
-    }
     self.mainTileView.frame = CGRectMake(0,50,self.frame.size.width,self.frame.size.height-50);
+    
     if (oldFrameHeight != newFrameHeight)
     {
         if ([(id)self.delegate respondsToSelector:@selector(calendarPicker:animateNewHeight:)])
@@ -1613,6 +1619,10 @@
 
 - (void)setSelectedDate:(NSDate *)date animated:(BOOL)animated
 {
+    if (self.isStateBlocked) {
+        return;
+    }
+    
     self.selectedDate = date;
     [self updateStateAnimated:animated];
 }
@@ -1622,6 +1632,31 @@
     self.selectedDate = date;
     self.highlightedDate = date;
     [self updateStateAnimated:animated];
+}
+
+#pragma mark - GUI Utils
+
+- (CGFloat)buttonWidthForColumnsCount:(NSInteger)columnsCount
+{
+    return floor((self.bounds.size.width + 2) / columnsCount);
+}
+
+- (CGFloat)buttonHeightForColumnsCount:(NSInteger)columnsCount
+{
+    CGFloat buttonHeight = [self buttonWidthForColumnsCount:columnsCount];
+    if (UIDeviceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
+        buttonHeight *= 0.5f;
+    }
+    return buttonHeight;
+}
+
+- (CGFloat)boundsWidth
+{
+    if (UIDeviceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
+        return self.bounds.size.width;
+    } else {
+        return self.bounds.size.height;
+    }
 }
 
 @end
