@@ -16,14 +16,10 @@
 
 - (NSString *)titleForState:(UIControlState)state;
 - (UIColor *)titleColorForState:(UIControlState)state;
-- (UIColor *)titleShadowColorForState:(UIControlState)state;
-- (CGSize)titleShadowOffsetForState:(UIControlState)state;
 - (UIImage *)backgroundImageForState:(UIControlState)state;
 
 - (void)setTitle:(NSString *)title forState:(UIControlState)state;
 - (void)setTitleColor:(UIColor *)color forState:(UIControlState)state;
-- (void)setTitleShadowColor:(UIColor *)color forState:(UIControlState)state;
-- (void)setTitleShadowOffset:(CGSize)size forState:(UIControlState)state;
 - (void)setBackgroundImage:(UIImage *)image forState:(UIControlState)state;
 
 + (NSMutableDictionary *)stateSizeImageDict;

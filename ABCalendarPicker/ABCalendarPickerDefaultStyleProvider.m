@@ -21,15 +21,12 @@
 @synthesize controlsPool = _controlsPool;
 
 @synthesize textColor = _textColor;
-@synthesize textShadowColor = _textShadowColor;
 @synthesize patternImageForGradientBar = _patternImageForGradientBar;
 
 @synthesize columnFont = _columnFont;
 @synthesize tileTitleFont = _tileTitleFont;
 @synthesize tileDotFont = _tileDotFont;
 
-@synthesize normalImage = _normalImage;
-@synthesize selectedImage = _selectedImage;
 @synthesize highlightedImage = _highlightedImage;
 @synthesize selectedHighlightedImage = _selectedHighlightedImage;
 
@@ -37,13 +34,7 @@
 @synthesize disabledTextColor = _disabledTextColor;
 @synthesize selectedTextColor = _selectedTextColor;
 
-@synthesize normalTextShadowColor = _normalTextShadowColor;
-@synthesize disabledTextShadowColor = _disabledTextShadowColor;
-@synthesize selectedTextShadowColor = _selectedTextShadowColor;
-
-@synthesize normalTextShadowPosition = _normalTextShadowPosition;
-@synthesize disabledTextShadowPosition = _disabledTextShadowPosition;
-@synthesize selectedTextShadowPosition = _selectedTextShadowPosition;
+@synthesize backgroundColor = _backgroundColor;
 
 - (NSBundle *)frameworkBundle
 {
@@ -80,16 +71,6 @@
 - (void)setTextColor:(UIColor *)textColor
 {
     [self setNormalTextColor:textColor];
-}
-
-- (UIColor *)textShadowColor
-{
-    return [self normalTextShadowColor];
-}
-
-- (void)setTextShadowColor:(UIColor *)textShadowColor
-{
-    [self setNormalTextShadowColor:textShadowColor];
 }
 
 - (UIFont *)titleFontForColumnTitlesVisible
@@ -132,34 +113,6 @@
     if (_patternImageForGradientBar == nil)
         _patternImageForGradientBar = [self imageNamed:@"GradientBar"];
     return _patternImageForGradientBar;
-}
-
-- (UIImage *)normalImage
-{
-    if (_normalImage == nil)
-        _normalImage = [[self imageNamed:@"TileNormal"] resizableImageWithCapInsets:UIEdgeInsetsMake(2,2,2,2)];
-    return _normalImage;
-}
-
-- (void)setNormalImage:(UIImage *)image
-{
-    _normalImage = image;
-    [self.controlsPool clear];
-    [[UIMyButton stateSizeImageDict] removeAllObjects];
-}
-
-- (UIImage *)selectedImage
-{
-    if (_selectedImage == nil)
-        _selectedImage = [[self imageNamed:@"TileToday"] resizableImageWithCapInsets:UIEdgeInsetsMake(13,10,13,10)];
-    return _selectedImage;
-}
-
-- (void)setSelectedImage:(UIImage *)image
-{
-    _selectedImage = image;
-    [self.controlsPool clear];
-    [[UIMyButton stateSizeImageDict] removeAllObjects];
 }
 
 - (UIImage*)highlightedImage
@@ -232,86 +185,16 @@
     [[UIMyButton stateSizeImageDict] removeAllObjects];
 }
 
-- (UIColor *)normalTextShadowColor
+- (UIColor *)backgroundColor
 {
-    if (_normalTextShadowColor == nil)
-        _normalTextShadowColor = [UIColor whiteColor];
-    return _normalTextShadowColor;
+    if (_backgroundColor == nil)
+        _backgroundColor = [UIColor whiteColor];
+    return _backgroundColor;
 }
 
-- (void)setNormalTextShadowColor:(UIColor *)color
+- (void)setBackgroundColor:(UIColor *)color
 {
-    _normalTextShadowColor = color;
-    [self.controlsPool clear];
-    [[UIMyButton stateSizeImageDict] removeAllObjects];
-}
-
-- (UIColor *)disabledTextShadowColor
-{
-    if (_disabledTextShadowColor == nil)
-        _disabledTextShadowColor = [UIColor whiteColor];
-    return _disabledTextShadowColor;
-}
-
-- (void)setDisabledTextShadowColor:(UIColor *)color
-{
-    _disabledTextShadowColor = color;
-    [self.controlsPool clear];
-    [[UIMyButton stateSizeImageDict] removeAllObjects];
-}
-
-- (UIColor *)selectedTextShadowColor
-{
-    if (_selectedTextShadowColor == nil)
-        _selectedTextShadowColor = [UIColor blackColor];
-    return _selectedTextShadowColor;
-}
-
-- (void)setSelectedTextShadowColor:(UIColor *)color
-{
-    _selectedTextShadowColor = color;
-    [self.controlsPool clear];
-    [[UIMyButton stateSizeImageDict] removeAllObjects];
-}
-
-- (CGSize)normalTextShadowPosition
-{
-    if (CGSizeEqualToSize(_normalTextShadowPosition, CGSizeZero))
-        _normalTextShadowPosition = CGSizeMake(0,1);
-    return _normalTextShadowPosition;
-}
-
-- (void)setNormalTextShadowPosition:(CGSize)position
-{
-    _normalTextShadowPosition = position;
-    [self.controlsPool clear];
-    [[UIMyButton stateSizeImageDict] removeAllObjects];
-}
-
-- (CGSize)disabledTextShadowPosition
-{
-    if (CGSizeEqualToSize(_disabledTextShadowPosition, CGSizeZero))
-        _disabledTextShadowPosition = CGSizeMake(0,1);
-    return _disabledTextShadowPosition;
-}
-
-- (void)setDisabledTextShadowPosition:(CGSize)position
-{
-    _disabledTextShadowPosition = position;
-    [self.controlsPool clear];
-    [[UIMyButton stateSizeImageDict] removeAllObjects];
-}
-
-- (CGSize)selectedTextShadowPosition
-{
-    if (CGSizeEqualToSize(_selectedTextShadowPosition, CGSizeZero))
-        _selectedTextShadowPosition = CGSizeMake(0,-1);
-    return _selectedTextShadowPosition;
-}
-
-- (void)setSelectedTextShadowPosition:(CGSize)position
-{
-    _selectedTextShadowPosition = position;
+    _backgroundColor = color;
     [self.controlsPool clear];
     [[UIMyButton stateSizeImageDict] removeAllObjects];
 }
@@ -333,35 +216,17 @@
         [button setTitleColor:self.disabledTextColor forState:UIControlStateDisabled];
         [button setTitleColor:self.selectedTextColor forState:UIControlStateDisabled | UIControlStateSelected];
         [button setTitleColor:self.selectedTextColor forState:UIControlStateHighlighted];
-        [button setTitleColor:self.selectedTextColor forState:UIControlStateSelected];
+        [button setTitleColor:self.normalTextColor forState:UIControlStateSelected];
         [button setTitleColor:self.selectedTextColor forState:UIControlStateSelected | UIControlStateHighlighted];
         
-        [button setTitleShadowColor:self.normalTextShadowColor forState:UIControlStateNormal];
-        [button setTitleShadowColor:self.disabledTextShadowColor forState:UIControlStateDisabled];
-        [button setTitleShadowColor:self.selectedTextShadowColor forState:UIControlStateDisabled | UIControlStateSelected];
-        [button setTitleShadowColor:self.selectedTextShadowColor forState:UIControlStateHighlighted];
-        [button setTitleShadowColor:self.selectedTextShadowColor forState:UIControlStateSelected];
-        [button setTitleShadowColor:self.selectedTextShadowColor forState:UIControlStateSelected | UIControlStateHighlighted];
-        
-        [button setTitleShadowOffset:self.normalTextShadowPosition forState:UIControlStateNormal];
-        [button setTitleShadowOffset:self.disabledTextShadowPosition forState:UIControlStateDisabled];
-        [button setTitleShadowOffset:self.selectedTextShadowPosition forState:UIControlStateDisabled | UIControlStateSelected];
-        [button setTitleShadowOffset:self.selectedTextShadowPosition forState:UIControlStateHighlighted];
-        [button setTitleShadowOffset:self.selectedTextShadowPosition forState:UIControlStateSelected];
-        [button setTitleShadowOffset:self.selectedTextShadowPosition forState:UIControlStateSelected | UIControlStateHighlighted];
-        
-        [button setBackgroundImage:self.normalImage forState:UIControlStateNormal];
-        [button setBackgroundImage:self.normalImage forState:UIControlStateDisabled];
-        [button setBackgroundImage:self.selectedImage forState:UIControlStateDisabled | UIControlStateSelected];
         [button setBackgroundImage:self.highlightedImage forState:UIControlStateHighlighted];
-        [button setBackgroundImage:self.selectedImage forState:UIControlStateSelected];
         [button setBackgroundImage:self.selectedHighlightedImage forState:UIControlStateSelected | UIControlStateHighlighted];
+        
+        [button setBackgroundColor:self.backgroundColor];
         
         return button;
     }];
     
-    //button.layer.shouldRasterize = YES;
-    //button.layer.rasterizationScale = [[UIScreen mainScreen] scale];
     button.numberOfDots = 0;
     [button setTitle:cellTitle forState:UIControlStateNormal];
     return button;

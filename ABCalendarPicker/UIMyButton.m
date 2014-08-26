@@ -64,20 +64,6 @@
     return _titleColors;
 }
 
-- (NSMutableDictionary *)titleShadowColors
-{
-    if (_titleShadowColors == nil)
-        _titleShadowColors = [NSMutableDictionary dictionary];
-    return _titleShadowColors;
-}
-
-- (NSMutableDictionary *)titleShadowOffsets
-{
-    if (_titleShadowOffsets == nil)
-        _titleShadowOffsets = [NSMutableDictionary dictionary];
-    return _titleShadowOffsets;
-}
-
 - (NSMutableDictionary *)backgroundImages
 {
     if (_backgroundImages == nil)
@@ -110,22 +96,6 @@
     if (titleColor == nil)
         titleColor = [self.titleColors objectForKey:[NSNumber numberWithInt:UIControlStateNormal]];
     return titleColor;
-}
-
-- (UIColor *)titleShadowColorForState:(UIControlState)state
-{
-    UIColor * titleShadowColor = [self.titleShadowColors objectForKey:[NSNumber numberWithInt:state]];
-    if (titleShadowColor == nil)
-        titleShadowColor = [self.titleShadowColors objectForKey:[NSNumber numberWithInt:UIControlStateNormal]];
-    return titleShadowColor;
-}
-
-- (CGSize)titleShadowOffsetForState:(UIControlState)state
-{
-    NSValue * titleShadowOffset = [self.titleShadowOffsets objectForKey:[NSNumber numberWithInt:state]];
-    if (titleShadowOffset == nil)
-        titleShadowOffset = [self.titleShadowOffsets objectForKey:[NSNumber numberWithInt:UIControlStateNormal]];
-    return [titleShadowOffset CGSizeValue];
 }
 
 - (UIImage *)backgroundImageForState:(UIControlState)state
@@ -183,10 +153,6 @@
 {
     NSString * titleText = [self titleForState:self.state];
     UIColor * titleColor = [self titleColorForState:self.state];
-    UIColor * titleShadowColor = [self titleShadowColorForState:self.state];
-    CGSize titleShadowOffset = [self titleShadowOffsetForState:self.state];
-    //UIImage * backgroundImage = [self backgroundImageForState:self.state];
-    //UIEdgeInsets capInsects = [self backgroundImageCapInsetsForState:self.state];
     NSString * dotsText = [@"" stringByPaddingToLength:self.numberOfDots withString:@"•" startingAtIndex:0];
     
     UIFont * titleFont = self.tileTitleFont;
@@ -199,33 +165,16 @@
                                      (self.bounds.size.height - titleSize.height)/2);
     CGPoint dotsPoint = CGPointMake((self.bounds.size.width - dotsSize.width)/2,
                                     self.bounds.size.height*3/5);
-    
-    /*
-    if (self.state == UIControlStateNormal || self.state == UIControlStateDisabled)
-    {
-        // Dirty speed up
-        if (self.barStyle == UIBarStyleBlack)
-        {
-            [[UIColor colorWithRed:12/255. green:12/255. blue:12/255. alpha:1.0] set];
-            UIRectFrame(CGRectMake(0,1,self.bounds.size.width-1,self.bounds.size.height-1));
-            [[UIColor colorWithRed:64/255. green:62/255. blue:54/255. alpha:1.0] set];
-            UIRectFrame(self.bounds);
-        }
-        else
-        {
-            [[UIColor colorWithRed:240/255. green:240/255. blue:240/255. alpha:1.0] set];
-            UIRectFrame(CGRectMake(0,1,self.bounds.size.width-1,self.bounds.size.height-1));
-            [[UIColor colorWithRed:176/255. green:176/255. blue:176/255. alpha:1.0] set];
-            UIRectFrame(self.bounds);
-        }
-    } else
-    {
-        [backgroungImage drawInRect:self.bounds];
-    }
-    */
 
+    UIImage *backgroundImage = [self backgroundImageForState:self.state];
+    CGFloat imageOffsetX = (CGRectGetWidth(self.bounds) - backgroundImage.size.width) * 0.5f;
+    CGFloat imageOffsetY = (CGRectGetHeight(self.bounds) - backgroundImage.size.height) * 0.5f;
+    
+    [backgroundImage drawInRect:CGRectMake(imageOffsetX, imageOffsetY,
+                                           backgroundImage.size.width,
+                                           backgroundImage.size.height)];
+    
     [titleColor set];
-    CGContextSetShadowWithColor(UIGraphicsGetCurrentContext(), titleShadowOffset, 0.0, titleShadowColor.CGColor);
     
     [titleText drawAtPoint:titlePoint withFont:titleFont];
     if (self.numberOfDots > 0)
@@ -234,29 +183,6 @@
 
 - (void)layoutSubviews
 {
-    NSMutableDictionary * stateSizeImageDict = [[self class] stateSizeImageDict];
-    
-    NSMutableDictionary * sizeImageDict = [stateSizeImageDict objectForKey:[NSNumber numberWithInt:self.state]];
-    if (sizeImageDict == nil)
-    {
-        sizeImageDict = [NSMutableDictionary dictionary];
-        [stateSizeImageDict setObject:sizeImageDict forKey:[NSNumber numberWithInt:self.state]];
-    }
-    
-    UIImage * resizedImage = [sizeImageDict objectForKey:[NSValue valueWithCGSize:self.bounds.size]];
-    if (resizedImage == nil)
-    {
-        UIImage * backgroundImage = [self backgroundImageForState:self.state];
-        
-        UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 0.0);
-        [backgroundImage drawInRect:self.bounds];
-        resizedImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-        
-        [sizeImageDict setObject:resizedImage forKey:[NSValue valueWithCGSize:self.bounds.size]];
-    }
-    
-    self.backgroundColor = [UIColor colorWithPatternImage:resizedImage];
     [super layoutSubviews];
 }
 

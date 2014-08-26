@@ -12,8 +12,8 @@
 @protocol ABCalendarPickerStyleProviderProtocol <NSObject>
 
 @property (strong,nonatomic) UIColor * textColor;
-@property (strong,nonatomic) UIColor * textShadowColor;
 @property (strong,nonatomic) UIImage * patternImageForGradientBar;
+@property (strong,nonatomic) UIColor * titleTextColor;
 
 @property (strong,nonatomic) UIFont * titleFontForColumnTitlesVisible;
 @property (strong,nonatomic) UIFont * titleFontForColumnTitlesInvisible;

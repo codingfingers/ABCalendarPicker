@@ -35,7 +35,6 @@
 @property (weak,nonatomic) UIControl * controlTouchBegin;
 @property (readonly) NSArray * providers;
 @property (nonatomic) ABCalendarPickerState previousState;
-@property (strong,nonatomic) ABViewPool * buttonsPool;
 @property (strong,nonatomic) NSMutableArray * dotLabels;
 @property (nonatomic) NSInteger dotLabelsToRemove;
 @property (nonatomic) BOOL deepPressingInProgress;
@@ -44,11 +43,6 @@
 @property (strong,nonatomic) NSDate * selectedDate;
 @property (strong,nonatomic) NSDate * highlightedDate;
 
-@property (strong,nonatomic) UIImage * patternImage;
-@property (strong,nonatomic) UIImage * normalImage;
-@property (strong,nonatomic) UIImage * highlightedImage;
-@property (strong,nonatomic) UIImage * selectedImage;
-@property (strong,nonatomic) UIImage * selectedHighlightedImage;
 @property (strong,nonatomic) UIImageView * gradientBar;
 
 - (void)changeStateTo:(ABCalendarPickerState)toState
@@ -92,16 +86,10 @@
 @synthesize highlightedControl = _highlightedControl;
 @synthesize controlTouchBegin = _buttonTouchBegin;
 @synthesize previousState = _previousState;
-@synthesize buttonsPool = _buttonsPool;
 @synthesize dotLabels = _dotLabels;
 @synthesize dotLabelsToRemove = _dotLabelsToRemove;
 @synthesize deepPressingInProgress = _deepPressingInProgress;
 
-@synthesize patternImage = _patternImage;
-@synthesize normalImage = _normalImage;
-@synthesize highlightedImage = _highlightedImage;
-@synthesize selectedImage = _selectedImage;
-@synthesize selectedHighlightedImage = _selectedHighlightedImage;
 @synthesize gradientBar = _gradientBar;
 
 - (NSBundle *)frameworkBundle
@@ -155,23 +143,12 @@
     if ([self providerForState:self.currentState] != nil)
         [self updateTitleForProvider:[self providerForState:self.currentState]];
     
-    //if (self.currentState == ABCalendarPickerStateDays
-    //    || self.currentState == ABCalendarPickerStateWeekdays)
-    //{
-        if ([(id)self.delegate respondsToSelector:@selector(calendarPicker:dateSelected:withState:)])
-        {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [self.delegate calendarPicker:self dateSelected:self.highlightedDate withState:self.currentState];
-            }];
-        }
-    //}
-}
-
-- (ABViewPool*)buttonsPool
-{
-    if (_buttonsPool == nil)
-        _buttonsPool = [[ABViewPool alloc] init];
-    return _buttonsPool;
+    if ([(id)self.delegate respondsToSelector:@selector(calendarPicker:dateSelected:withState:)])
+    {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self.delegate calendarPicker:self dateSelected:self.highlightedDate withState:self.currentState];
+        }];
+    }
 }
 
 - (NSMutableArray*)dotLabels
@@ -297,8 +274,6 @@
     button.titleLabel.font = [UIFont fontWithName:@"Hiragino Mincho ProN" size:20];
     [button setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [button setTitleColor:[UIColor blackColor] forState:UIControlStateHighlighted];
-    [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    button.titleLabel.shadowOffset = CGSizeMake(0,1);
     [button setTitle:text forState:UIControlStateNormal];
     
     UITapGestureRecognizer * tapPress = [[UITapGestureRecognizer alloc] initWithTarget:self action:fastTapSel];
@@ -580,93 +555,6 @@
     }
 }
 
-/*
-- (void)tilesTouchedAt:(CGPoint)point moved:(BOOL)moved
-{
-    for (int i = 0 ; i < [self.controls count]; i++)
-    {
-        NSArray * arr = [self.controls objectAtIndex:i];
-        for (int j = 0; j < arr.count; j++) 
-        {
-            UIControl * control = [arr objectAtIndex:j];
-            
-            if (CGRectContainsPoint(control.frame, point))
-            {
-                NSDate * date = [self.currentProvider dateForRow:i andColumn:j];
-                
-                if (control.enabled)
-                {
-                    if (control.highlighted)
-                    {
-                        if (!moved)
-                            self.controlTouchBegin = control;
-                    }
-                    else 
-                    {
-                        // Lets highlight
-                        self.highlightedDate = date;
-                        self.highlightedControl.highlighted = NO;
-                        self.highlightedControl = control;
-                        self.highlightedControl.highlighted = YES;
-                        
-                        [self.oldTileView bringSubviewToFront:self.selectedControl];
-                        [self.oldTileView bringSubviewToFront:control];
-                    }
-                }
-                else
-                {
-                    // Lets segue prev or next
-                    ABCalendarPickerAnimation animation = (i == 0) ? [self.currentProvider animationForPrev] : [self.currentProvider animationForNext];
-
-                    self.highlightedDate = date;
-                    if ([self.currentProvider rowsCount] == 1)
-                        [self changeStateTo:self.currentState fromState:self.currentState animation:ABCalendarPickerAnimationTransition canDiffuse:1];
-                    else
-                        [self changeStateTo:self.currentState fromState:self.currentState animation:animation canDiffuse:[self.currentProvider canDiffuse]];
-                    return;
-                }
-            }
-        }
-    }
-}
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    CGPoint point = [[touches anyObject] locationInView:self.oldTileView];
-    [self tilesTouchedAt:point moved:NO];
-}
-
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    CGPoint point = [[touches anyObject] locationInView:self.oldTileView];
-    [self tilesTouchedAt:point moved:YES];    
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    CGPoint point = [[touches anyObject] locationInView:self.oldTileView];
-    
-    for (NSArray * arr in self.controls)
-    for (UIControl * control in arr)
-        if (CGRectContainsPoint(control.frame, point))
-        {
-            if (control == self.controlTouchBegin)
-            {
-                // Lets segue in
-                NSInteger index = [self.providers indexOfObject:self.currentProvider];
-                if (index > 0 && [self.providers objectAtIndex:index-1] != nil)
-                    [self setState:self.currentState-1 animated:YES];
-                else if (self.currentState == ABCalendarPickerStateWeekdays)
-                    [self setState:self.currentState+1 animated:YES];
-                self.controlTouchBegin = nil;
-            }
-            return;
-        }
-    
-    return;
-}
-*/
-
 #pragma mark -
 #pragma mark Animation Functions
 
@@ -694,15 +582,11 @@
         columnLabel.textAlignment = UITextAlignmentCenter;
 #endif
         columnLabel.backgroundColor = [UIColor clearColor];
-		//columnLabel.shadowColor = [UIColor whiteColor];
-		columnLabel.shadowOffset = CGSizeMake(0, 1);
         columnLabel.font = self.styleProvider.columnFont;
 		columnLabel.font = [UIFont boldSystemFontOfSize:10.0f];
         columnLabel.text = columnName;
-        //columnLabel.textColor = [UIColor darkGrayColor];
 		
         columnLabel.textColor = self.styleProvider.textColor;
-        columnLabel.shadowColor = self.styleProvider.textShadowColor;
         
         [self addSubview:columnLabel];
         [self.columnLabels addObject:columnLabel];
@@ -720,17 +604,12 @@
         self.titleLabel.textAlignment = UITextAlignmentCenter;
 #endif
         self.titleLabel.backgroundColor = [UIColor clearColor];
-        //self.titleLabel.shadowColor = [UIColor whiteColor];
-        self.titleLabel.shadowOffset = CGSizeMake(0, 1);
         self.titleLabel.font = (self.columnLabels.count == 0)
                              ? [self.styleProvider titleFontForColumnTitlesInvisible]
                              : [self.styleProvider titleFontForColumnTitlesVisible];
-        //self.titleLabel.textColor = [UIColor colorWithRed:59/255. green:73/255. blue:88/255. alpha:1];
-        //self.titleLabel.adjustsFontSizeToFitWidth = YES;
     }
     
     self.titleLabel.textColor = self.styleProvider.textColor;
-    self.titleLabel.shadowColor = self.styleProvider.textShadowColor;
     
     if (self.titleButton == nil)
     {
@@ -788,24 +667,20 @@
     
     self.leftArrow.frame = CGRectMake((self.longLeftArrow.hidden ? 0 : 35), 3, 40, 45);
     [self.leftArrow setTitleColor:self.styleProvider.textColor forState:UIControlStateNormal];
-    [self.leftArrow setTitleShadowColor:self.styleProvider.textShadowColor forState:UIControlStateNormal];
     
     self.rightArrow.frame = CGRectMake(self.bounds.size.width-40-(self.longRightArrow.hidden ? 0 : 35), 3, 40, 45);
     [self.rightArrow setTitleColor:self.styleProvider.textColor forState:UIControlStateNormal];
-    [self.rightArrow setTitleShadowColor:self.styleProvider.textShadowColor forState:UIControlStateNormal];
     
     if (!self.longLeftArrow.hidden)
     {
         self.longLeftArrow.frame = CGRectMake(0, 3, 35, 45);
         [self.longLeftArrow setTitleColor:self.styleProvider.textColor forState:UIControlStateNormal];
-        [self.longLeftArrow setTitleShadowColor:self.styleProvider.textShadowColor forState:UIControlStateNormal];
         
     }
     if (!self.longRightArrow.hidden)
     {
         self.longRightArrow.frame = CGRectMake(self.bounds.size.width-35, 3, 35, 45);
         [self.longRightArrow setTitleColor:self.styleProvider.textColor forState:UIControlStateNormal];
-        [self.longRightArrow setTitleShadowColor:self.styleProvider.textShadowColor forState:UIControlStateNormal];
     }
 }
 
@@ -1226,9 +1101,6 @@
         [self addGestureRecognizer:leftRecognizer];
         [self addGestureRecognizer:rightRecognizer];
     }
-    
-    if (self.patternImage == nil)
-        self.patternImage = [[self imageNamed:@"TilePattern"] resizableImageWithCapInsets:UIEdgeInsetsMake(2, 0, 0, 2)];
     
     CGRect newTileRect = CGRectMake(0, 0, self.mainTileView.bounds.size.width, buttonHeight*rowsCount + 1);
     self.nowTileView = [[UIView alloc] initWithFrame:newTileRect];

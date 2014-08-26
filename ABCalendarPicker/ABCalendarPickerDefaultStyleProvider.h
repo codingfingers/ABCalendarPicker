@@ -13,7 +13,6 @@
 @interface ABCalendarPickerDefaultStyleProvider : NSObject<ABCalendarPickerStyleProviderProtocol>
 
 @property (strong,nonatomic) UIColor * textColor;
-@property (strong,nonatomic) UIColor * textShadowColor;
 @property (strong,nonatomic) UIImage * patternImageForGradientBar;
 
 @property (strong,nonatomic) UIFont * titleFontForColumnTitlesVisible;
@@ -21,6 +20,8 @@
 @property (strong,nonatomic) UIFont * columnFont;
 @property (strong,nonatomic) UIFont * tileTitleFont;
 @property (strong,nonatomic) UIFont * tileDotFont;
+
+@property (strong,nonatomic) UIColor * backgroundColor;
 
 - (UIControl*)calendarPicker:(ABCalendarPicker*)calendarPicker
             cellViewForTitle:(NSString*)cellTitle
@@ -32,22 +33,12 @@
             withEvents:(NSInteger)eventsCount
               andState:(ABCalendarPickerState)state;
 
-@property (strong,nonatomic) UIImage * normalImage;
-@property (strong,nonatomic) UIImage * selectedImage;
 @property (strong,nonatomic) UIImage * highlightedImage;
 @property (strong,nonatomic) UIImage * selectedHighlightedImage;
 
 @property (strong,nonatomic) UIColor * normalTextColor;
 @property (strong,nonatomic) UIColor * disabledTextColor;
 @property (strong,nonatomic) UIColor * selectedTextColor;
-
-@property (strong,nonatomic) UIColor * normalTextShadowColor;
-@property (strong,nonatomic) UIColor * disabledTextShadowColor;
-@property (strong,nonatomic) UIColor * selectedTextShadowColor;
-
-@property (assign,nonatomic) CGSize normalTextShadowPosition;
-@property (assign,nonatomic) CGSize disabledTextShadowPosition;
-@property (assign,nonatomic) CGSize selectedTextShadowPosition;
 
 @property (assign,nonatomic) NSInteger maxNumberOfDots;
 

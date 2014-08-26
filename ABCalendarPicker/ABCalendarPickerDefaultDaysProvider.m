@@ -128,7 +128,7 @@
     NSDateComponents * dateComponents = [[NSDateComponents alloc] init];
     dateComponents.day = column + self.calendar.firstWeekday - 1;
     NSDate * date = [self.calendar dateFromComponents:dateComponents];
-    return [self.dateFormatter stringFromDate:date];
+    return [[self.dateFormatter stringFromDate:date] uppercaseString];
 }
 
 - (NSString*)titleText
