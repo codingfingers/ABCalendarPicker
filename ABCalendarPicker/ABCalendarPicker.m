@@ -1012,8 +1012,12 @@
         if ([(id)self.delegate respondsToSelector:@selector(calendarPicker:didSetState:fromState:)])
             [self.delegate calendarPicker:self didSetState:self.currentState fromState:self.previousState];
     }
-    
     self.userInteractionEnabled = YES;
+    
+    if (self.delegate
+        && [(id)self.delegate respondsToSelector:@selector(calendarPicker:didFinishedAnimationFromState:toState:)]) {
+        [self.delegate calendarPicker:self didFinishedAnimationFromState:self.previousState toState:self.currentState];
+    }
 }
 
 - (void)changeStateTo:(ABCalendarPickerState)toState
@@ -1528,6 +1532,15 @@
         return self.bounds.size.width;
     } else {
         return self.bounds.size.height;
+    }
+}
+
+#pragma mark - Redraw elements
+
+- (void)redrawDots {
+    id<ABCalendarPickerDateProviderProtocol> provider = [self providerForState:self.currentState];
+    if (provider != nil) {
+        [self updateDotsForProvider:provider];
     }
 }
 

@@ -101,4 +101,11 @@
 
 - (void)setHighlightedAndSectedDate:(NSDate *)date animated:(BOOL)animated;
 
+
+/// ----------------------------------------------------------------
+/// @name Redrawing elements
+/// ----------------------------------------------------------------
+
+- (void)redrawDots;
+
 @end
